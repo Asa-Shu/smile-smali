@@ -217,21 +217,37 @@ fun ViewerScreen(vm: ViewerViewModel) {
             }
             Row(modifier = Modifier.fillMaxSize()) {
                 LazyColumn(modifier = Modifier.weight(1f)) {
-                    items(filtered) { clazz ->
-                        Text(
-                            text = clazz.className,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { vm.selectClass(clazz.className) }
-                                .padding(8.dp),
-                            fontWeight = if (state.selectedClass?.className == clazz.className) FontWeight.Bold else FontWeight.Normal
-                        )
+                    if (filtered.isEmpty()) {
+                        item {
+                            val message = when {
+                                state.loading -> "解析中..."
+                                state.error != null -> "読み込みに失敗しました"
+                                state.classes.isEmpty() -> "クラスが見つかりませんでした（DEXが含まれていない可能性があります）"
+                                else -> "検索条件に一致するクラス/メソッドがありません"
+                            }
+                            Text(
+                                text = message,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(8.dp)
+                            )
+                        }
+                    } else {
+                        items(filtered) { clazz ->
+                            Text(
+                                text = clazz.className,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { vm.selectClass(clazz.className) }
+                                    .padding(8.dp),
+                                fontWeight = if (state.selectedClass?.className == clazz.className) FontWeight.Bold else FontWeight.Normal
+                            )
+                        }
                     }
                 }
                 Divider(modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp))
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     val selected = state.selectedClass
-                    if (selected != null) {
+                    if (selected != null && selected.body.isNotBlank()) {
                         items(selected.body.lines()) { line ->
                             val invoke = line.substringAfter("# ", "")
                             Text(
@@ -244,6 +260,14 @@ fun ViewerScreen(vm: ViewerViewModel) {
                                         vm.selectClass(targetClass)
                                     }
                                     .padding(horizontal = 6.dp, vertical = 1.dp)
+                            )
+                        }
+                    } else {
+                        item {
+                            Text(
+                                text = "クラスを選択するとここに内容を表示します",
+                                color = Color.Gray,
+                                modifier = Modifier.padding(8.dp)
                             )
                         }
                     }
