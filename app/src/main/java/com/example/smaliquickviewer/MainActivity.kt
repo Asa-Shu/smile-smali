@@ -222,6 +222,12 @@ fun ViewerScreen(vm: ViewerViewModel) {
             if (state.loading) {
                 Text("解析中...")
             }
+            if (!state.loading && state.error == null && state.classes.isEmpty()) {
+                Text("クラスが見つかりませんでした（DEXが含まれていない可能性があります）", color = Color.Gray)
+            }
+            if (!state.loading && state.classes.isNotEmpty() && filtered.isEmpty()) {
+                Text("検索条件に一致するクラス/メソッドがありません", color = Color.Gray)
+            }
             Row(modifier = Modifier.fillMaxSize()) {
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     if (filtered.isEmpty()) {
