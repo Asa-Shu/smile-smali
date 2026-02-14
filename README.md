@@ -30,3 +30,10 @@ gradle wrapper --gradle-version 8.14.3 --distribution-type bin --no-validate-url
 ```
 
 - 生成後は `./gradlew <task>` で実行できます。
+
+## トラブルシューティング
+
+### `java.lang.OutOfMemoryError: Java heap space` が出る場合
+- `gradle.properties` で Gradle/Kotlin デーモンのヒープを増やしてください（本リポジトリでは設定済み）。
+- それでも不足する場合は `org.gradle.jvmargs` の `-Xmx` をさらに大きくしてください（例: `-Xmx6g`）。
+- Android Studio の **Settings > Build, Execution, Deployment > Compiler** でもビルドメモリ設定を確認してください。
