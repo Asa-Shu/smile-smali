@@ -1,0 +1,21 @@
+# Smali Quick Viewer (MVP)
+
+Android 向けの最小構成 Smali Viewer です。
+
+## MVP機能
+- APK選択 (`classes*.dex` を読み取り)
+- クラス/メソッド検索
+- smaliライク表示（命令一覧）
+- invoke参照ジャンプ（`# Lpkg/Class;->method` コメントをタップ）
+- ブックマーク機能は未実装（要件どおり）
+
+## 使い方
+1. Android Studio で開く
+2. 実機/エミュレータで起動
+3. `APKを選択` を押して APK を選ぶ
+4. 左でクラス選択、右で命令を閲覧
+5. `invoke-*` 行をタップすると対象クラスにジャンプ
+
+## 注意
+- MVPのため、完全なbaksmali出力ではなく、dex命令ベースの軽量表示です。
+- 解析対象が大きいAPKの場合、端末性能により時間がかかります。
