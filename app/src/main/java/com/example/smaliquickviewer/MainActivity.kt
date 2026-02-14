@@ -215,6 +215,12 @@ fun ViewerScreen(vm: ViewerViewModel) {
             if (state.loading) {
                 Text("解析中...")
             }
+            if (!state.loading && state.error == null && state.classes.isEmpty()) {
+                Text("クラスが見つかりませんでした（DEXが含まれていない可能性があります）", color = Color.Gray)
+            }
+            if (!state.loading && state.classes.isNotEmpty() && filtered.isEmpty()) {
+                Text("検索条件に一致するクラス/メソッドがありません", color = Color.Gray)
+            }
             Row(modifier = Modifier.fillMaxSize()) {
                 LazyColumn(modifier = Modifier.weight(1f)) {
                     items(filtered) { clazz ->
@@ -244,6 +250,14 @@ fun ViewerScreen(vm: ViewerViewModel) {
                                         vm.selectClass(targetClass)
                                     }
                                     .padding(horizontal = 6.dp, vertical = 1.dp)
+                            )
+                        }
+                    } else {
+                        item {
+                            Text(
+                                text = "クラスを選択するとここに内容を表示します",
+                                color = Color.Gray,
+                                modifier = Modifier.padding(8.dp)
                             )
                         }
                     }
