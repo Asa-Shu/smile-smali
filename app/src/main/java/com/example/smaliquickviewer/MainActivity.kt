@@ -82,13 +82,15 @@ data class UiState(
     val query: String = "",
     val classes: List<SmaliClass> = emptyList(),
     val selectedClass: SmaliClass? = null,
-    val error: String? = null
+    val error: String? = null,
+    val sourceSummary: String = ""
 )
 
 class ViewerViewModel(
     private val context: android.content.Context
 ) : ViewModel() {
     private val contentResolver = context.contentResolver
+    private val appSmaliPrefix = "L${context.packageName.replace('.', '/')}"
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
@@ -111,7 +113,8 @@ class ViewerViewModel(
                 _uiState.value = UiState(
                     classes = classes,
                     selectedClass = classes.firstOrNull(),
-                    loading = false
+                    loading = false,
+                    sourceSummary = "選択した APK: 全クラス ${classes.size} 件"
                 )
             }.onFailure { err ->
                 _uiState.value = _uiState.value.copy(loading = false, error = err.message)
@@ -126,11 +129,13 @@ class ViewerViewModel(
                 FileInputStream(context.applicationInfo.sourceDir).use { apkStream ->
                     readSmaliLikeClasses(apkStream.readBytes())
                 }
-            }.onSuccess { classes ->
+            }.onSuccess { allClasses ->
+                val appOnlyClasses = allClasses.filter { it.className.startsWith(appSmaliPrefix) }
                 _uiState.value = UiState(
-                    classes = classes,
-                    selectedClass = classes.firstOrNull(),
-                    loading = false
+                    classes = appOnlyClasses,
+                    selectedClass = appOnlyClasses.firstOrNull(),
+                    loading = false,
+                    sourceSummary = "起動時サンプル: アプリ本体 ${appOnlyClasses.size} 件 / APK 全体 ${allClasses.size} 件"
                 )
             }.onFailure { err ->
                 _uiState.value = _uiState.value.copy(loading = false, error = err.message)
@@ -214,6 +219,9 @@ fun ViewerScreen(vm: ViewerViewModel) {
                 Text("APKを選択")
             }
             Text("起動時にサンプルとしてこのアプリ自身のAPKを読み込みます")
+            if (state.sourceSummary.isNotBlank()) {
+                Text(state.sourceSummary, color = MaterialTheme.colorScheme.primary)
+            }
             OutlinedTextField(
                 value = state.query,
                 onValueChange = vm::onQueryChange,
