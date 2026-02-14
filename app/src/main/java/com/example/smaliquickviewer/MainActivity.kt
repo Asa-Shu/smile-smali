@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,8 +16,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -266,7 +270,20 @@ fun ViewerScreen(vm: ViewerViewModel) {
                 LazyColumn(modifier = Modifier.weight(0.62f)) {
                     val selected = state.selectedClass
                     if (selected != null && selected.body.isNotBlank()) {
-                        items(selected.body.lines()) { line ->
+                        val smaliLines = selected.body.lines()
+                        itemsIndexed(smaliLines) { index, line ->
+                            val trimmed = line.trimStart()
+                            val isMethodStart = trimmed.startsWith(".method ")
+                            val isMethodEnd = trimmed == ".end method"
+
+                            if (isMethodStart && index > 0) {
+                                HorizontalDivider(
+                                    thickness = 1.dp,
+                                    color = MaterialTheme.colorScheme.outlineVariant,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                )
+                            }
+
                             val invoke = line.substringAfter("# ", "")
                             Text(
                                 text = highlightLine(line),
@@ -277,7 +294,16 @@ fun ViewerScreen(vm: ViewerViewModel) {
                                         val targetClass = invoke.substringBefore("->")
                                         vm.selectClass(targetClass)
                                     }
-                                    .padding(horizontal = 6.dp, vertical = 1.dp)
+                                    .padding(horizontal = 4.dp, vertical = 1.dp)
+                                    .background(
+                                        color = if (isMethodStart || isMethodEnd) {
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.08f)
+                                        } else {
+                                            Color.Transparent
+                                        },
+                                        shape = RoundedCornerShape(4.dp)
+                                    )
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
                             )
                         }
                     } else {
