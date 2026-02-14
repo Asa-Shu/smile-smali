@@ -188,9 +188,13 @@ fun ViewerScreen(vm: ViewerViewModel) {
         onResult = { uri -> if (uri != null) vm.openApk(uri) }
     )
 
-    val filtered = state.classes.filter {
-        val q = state.query.trim()
-        q.isBlank() || it.className.contains(q, true) || it.methods.any { m -> m.contains(q, true) }
+    val query = state.query.trim()
+    val filtered = if (query.isBlank()) {
+        state.classes
+    } else {
+        state.classes.filter {
+            it.className.contains(query, true) || it.methods.any { m -> m.contains(query, true) }
+        }
     }
 
     Scaffold { padding ->
@@ -211,6 +215,9 @@ fun ViewerScreen(vm: ViewerViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("クラス/メソッド検索") }
             )
+            if (!state.loading && state.error == null && state.classes.isNotEmpty() && query.isBlank()) {
+                Text("無検索: ${state.classes.size}件を表示中", color = MaterialTheme.colorScheme.primary)
+            }
             state.error?.let { Text("Error: $it", color = Color.Red) }
             if (state.loading) {
                 Text("解析中...")
@@ -229,7 +236,7 @@ fun ViewerScreen(vm: ViewerViewModel) {
                                 state.loading -> "解析中..."
                                 state.error != null -> "読み込みに失敗しました"
                                 state.classes.isEmpty() -> "クラスが見つかりませんでした（DEXが含まれていない可能性があります）"
-                                else -> "検索条件に一致するクラス/メソッドがありません"
+                                else -> "検索条件に一致するクラス/メソッドがありません（検索語: $query）"
                             }
                             Text(
                                 text = message,
