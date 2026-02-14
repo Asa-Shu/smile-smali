@@ -17,11 +17,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -229,7 +229,7 @@ fun ViewerScreen(vm: ViewerViewModel) {
                 Text("検索条件に一致するクラス/メソッドがありません", color = Color.Gray)
             }
             Row(modifier = Modifier.fillMaxSize()) {
-                LazyColumn(modifier = Modifier.weight(1f)) {
+                LazyColumn(modifier = Modifier.weight(0.38f)) {
                     if (filtered.isEmpty()) {
                         item {
                             val message = when {
@@ -257,8 +257,12 @@ fun ViewerScreen(vm: ViewerViewModel) {
                         }
                     }
                 }
-                Divider(modifier = Modifier.fillMaxSize().padding(horizontal = 4.dp))
-                LazyColumn(modifier = Modifier.weight(1f)) {
+                VerticalDivider(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 4.dp)
+                )
+                LazyColumn(modifier = Modifier.weight(0.62f)) {
                     val selected = state.selectedClass
                     if (selected != null && selected.body.isNotBlank()) {
                         items(selected.body.lines()) { line ->
