@@ -4,3 +4,6 @@ local.properties
 **/build/
 .idea/
 *.iml
+
+# Gradle wrapper binary (generated locally)
+gradle/wrapper/gradle-wrapper.jar

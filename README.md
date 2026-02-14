@@ -19,3 +19,14 @@ Android 向けの最小構成 Smali Viewer です。
 ## 注意
 - MVPのため、完全なbaksmali出力ではなく、dex命令ベースの軽量表示です。
 - 解析対象が大きいAPKの場合、端末性能により時間がかかります。
+
+
+## Gradle Wrapper について
+- このリポジトリではレビュー制約によりバイナリ（`gradle-wrapper.jar`）をコミットしていません。
+- 必要に応じてローカルで以下を実行して生成してください。
+
+```bash
+gradle wrapper --gradle-version 8.14.3 --distribution-type bin --no-validate-url
+```
+
+- 生成後は `./gradlew <task>` で実行できます。
