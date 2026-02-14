@@ -2,6 +2,7 @@ package com.example.smaliquickviewer
 
 import android.net.Uri
 import android.os.Bundle
+import java.io.FileInputStream
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -49,10 +50,11 @@ import java.util.zip.ZipInputStream
 
 class MainActivity : ComponentActivity() {
     private val vm by lazy {
+        val appContext = applicationContext
         ViewModelProvider(this, object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")
-                return ViewerViewModel(contentResolver) as T
+                return ViewerViewModel(appContext) as T
             }
         })[ViewerViewModel::class.java]
     }
@@ -79,10 +81,15 @@ data class UiState(
 )
 
 class ViewerViewModel(
-    private val contentResolver: android.content.ContentResolver
+    private val context: android.content.Context
 ) : ViewModel() {
+    private val contentResolver = context.contentResolver
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+
+    init {
+        loadBundledSampleApk()
+    }
 
     fun onQueryChange(q: String) {
         _uiState.value = _uiState.value.copy(query = q)
@@ -95,6 +102,25 @@ class ViewerViewModel(
                 contentResolver.openInputStream(uri)?.use { apkStream ->
                     readSmaliLikeClasses(apkStream.readBytes())
                 } ?: error("APK を開けませんでした")
+            }.onSuccess { classes ->
+                _uiState.value = UiState(
+                    classes = classes,
+                    selectedClass = classes.firstOrNull(),
+                    loading = false
+                )
+            }.onFailure { err ->
+                _uiState.value = _uiState.value.copy(loading = false, error = err.message)
+            }
+        }
+    }
+
+    private fun loadBundledSampleApk() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.value = _uiState.value.copy(loading = true, error = null)
+            runCatching {
+                FileInputStream(context.applicationInfo.sourceDir).use { apkStream ->
+                    readSmaliLikeClasses(apkStream.readBytes())
+                }
             }.onSuccess { classes ->
                 _uiState.value = UiState(
                     classes = classes,
@@ -178,6 +204,7 @@ fun ViewerScreen(vm: ViewerViewModel) {
             Button(onClick = { launcher.launch("application/vnd.android.package-archive") }) {
                 Text("APKを選択")
             }
+            Text("起動時にサンプルとしてこのアプリ自身のAPKを読み込みます")
             OutlinedTextField(
                 value = state.query,
                 onValueChange = vm::onQueryChange,
